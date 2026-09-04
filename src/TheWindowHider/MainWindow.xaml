@@ -1,0 +1,341 @@
+<Window x:Class="TheWindowHider.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:TheWindowHider.UI"
+        Title="The Window Hider"
+        Icon="Assets/app.ico"
+        Width="960" Height="660" MinWidth="760" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBgBrush}"
+        FontFamily="Segoe UI Variable, Segoe UI"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <Window.Resources>
+        <ui:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <ui:EnumFriendlyConverter x:Key="EnumFriendly" />
+    </Window.Resources>
+
+    <Grid Margin="22">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============ Header ============ -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="The Window Hider" FontSize="22" FontWeight="Bold" />
+                <TextBlock Text="Hide any application's windows from screen sharing and recording"
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,3,0,0" />
+            </StackPanel>
+
+            <Border Grid.Column="1" Style="{StaticResource Card}" Padding="16,12">
+                <StackPanel>
+                    <CheckBox Style="{StaticResource ToggleSwitch}"
+                              IsChecked="{Binding MasterEnabled}"
+                              Content="{Binding MasterStateText}" FontWeight="SemiBold" FontSize="14" />
+                    <TextBlock Text="{Binding StatusSummary}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12" Margin="56,6,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============ Tabs ============ -->
+        <TabControl Grid.Row="1" Style="{StaticResource ModernTabControl}">
+
+            <!-- Open windows tab -->
+            <TabItem Style="{StaticResource ModernTabItem}" Header="Open windows">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                 Tag="Search windows or apps…"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1" Style="{StaticResource GhostButton}" Margin="10,0,0,0"
+                                Command="{Binding RefreshCommand}" Content="Refresh" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  Padding="0,0,8,0" HorizontalScrollBarVisibility="Disabled">
+                        <Grid>
+                            <ItemsControl ItemsSource="{Binding WindowsView}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource Card}" Padding="12" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="8"
+                                                        Background="{StaticResource InputBgBrush}" Margin="0,0,12,0">
+                                                    <Image Source="{Binding Icon}" Width="26" Height="26"
+                                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding SubTitle}" FontSize="12"
+                                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                                </StackPanel>
+
+                                                <Border Grid.Column="2" VerticalAlignment="Center" Margin="8,0"
+                                                        CornerRadius="6" Padding="9,4" Background="#14314B"
+                                                        Visibility="{Binding IsHidden, Converter={StaticResource BoolToVis}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse Width="7" Height="7" Fill="{StaticResource AccentBrush}"
+                                                                 VerticalAlignment="Center" Margin="0,0,6,0" />
+                                                        <TextBlock Text="Hidden" FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource AccentBrush}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <Button Grid.Column="3" Style="{StaticResource LinkButton}"
+                                                        Margin="4,0,8,0" VerticalAlignment="Center"
+                                                        Command="{Binding HideAppCommand}"
+                                                        Content="Hide whole app"
+                                                        ToolTip="Add a rule that hides every window of this application" />
+
+                                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="Hide" VerticalAlignment="Center" FontSize="12"
+                                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0" />
+                                                    <CheckBox Style="{StaticResource MiniSwitch}"
+                                                              IsChecked="{Binding HideThisWindow}"
+                                                              ToolTip="Hide just this window (for this session)" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="No windows match your search." HorizontalAlignment="Center"
+                                       Margin="0,40,0,0" Foreground="{StaticResource TextSecondaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding WindowsView.IsEmpty}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- Rules tab -->
+            <TabItem Style="{StaticResource ModernTabItem}" Header="Rules">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Automatic hide rules" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="Rules run continuously, hiding new windows the moment they appear. Exceptions always win."
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding AddRuleCommand}" Content="+  Add rule" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  Padding="0,0,8,0" HorizontalScrollBarVisibility="Disabled">
+                        <Grid>
+                            <ItemsControl ItemsSource="{Binding Rules}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,10">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="170" />
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <ComboBox Grid.Column="0" Margin="0,0,8,0"
+                                                              Style="{StaticResource ModernComboBox}"
+                                                              ItemContainerStyle="{StaticResource ModernComboItem}"
+                                                              ItemsSource="{Binding TargetOptions}"
+                                                              SelectedItem="{Binding Target}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Converter={StaticResource EnumFriendly}}" />
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+
+                                                    <ComboBox Grid.Column="1" Margin="0,0,8,0"
+                                                              Style="{StaticResource ModernComboBox}"
+                                                              ItemContainerStyle="{StaticResource ModernComboItem}"
+                                                              ItemsSource="{Binding ModeOptions}"
+                                                              SelectedItem="{Binding Mode}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Converter={StaticResource EnumFriendly}}" />
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+
+                                                    <TextBox Grid.Column="2" Style="{StaticResource ModernTextBox}"
+                                                             VerticalAlignment="Center" Tag="Value, e.g. chrome.exe   (press Enter to apply)"
+                                                             KeyDown="RuleValue_KeyDown"
+                                                             Text="{Binding Value, UpdateSourceTrigger=LostFocus}" />
+
+                                                    <Button Grid.Column="3" Style="{StaticResource DangerLinkButton}"
+                                                            Margin="8,0,0,0" Content="Remove"
+                                                            Command="{Binding DeleteCommand}" />
+                                                </Grid>
+
+                                                <Grid Margin="0,12,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                                               Text="{Binding Summary}" FontSize="12"
+                                                               Foreground="{StaticResource TextSecondaryBrush}" />
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="Match case" VerticalAlignment="Center" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0" />
+                                                        <CheckBox Style="{StaticResource MiniSwitch}" IsChecked="{Binding CaseSensitive}"
+                                                                  VerticalAlignment="Center" Margin="0,0,20,0" />
+
+                                                        <TextBlock Text="Exception" VerticalAlignment="Center" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"
+                                                                   ToolTip="A window matching this rule is never hidden" />
+                                                        <CheckBox Style="{StaticResource MiniSwitch}" IsChecked="{Binding IsException}"
+                                                                  VerticalAlignment="Center" Margin="0,0,20,0"
+                                                                  ToolTip="A window matching this rule is never hidden" />
+
+                                                        <TextBlock Text="Enabled" VerticalAlignment="Center" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0" />
+                                                        <CheckBox Style="{StaticResource MiniSwitch}" IsChecked="{Binding Enabled}"
+                                                                  VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Border Padding="30" Margin="0,4,0,0">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Rules.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="No rules yet" FontSize="15" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="Add a rule, or use “Hide whole app” on the Open windows tab."
+                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
+                                               Margin="0,6,0,0" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- Settings tab -->
+            <TabItem Style="{StaticResource ModernTabItem}" Header="Settings">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}" Padding="20" Margin="0,0,0,14"
+                                Visibility="{Binding ShowInstallSection, Converter={StaticResource BoolToVis}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Install on this PC" FontSize="15" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding InstallStatusText}" FontSize="12"
+                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Content="Install"
+                                        VerticalAlignment="Center" Command="{Binding InstallCommand}"
+                                        Visibility="{Binding CanInstall, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Padding="20" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Startup &amp; behaviour" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+                                <ui:SettingRow Title="Start with Windows"
+                                               Description="Launch automatically when you sign in.">
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding StartWithWindows}" />
+                                </ui:SettingRow>
+
+                                <ui:SettingRow Title="Start minimized to tray"
+                                               Description="Open straight to the notification area with no window.">
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding StartMinimized}" />
+                                </ui:SettingRow>
+
+                                <ui:SettingRow Title="Close to tray"
+                                               Description="Keep hiding in the background when you close the window."
+                                               IsLast="True">
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding CloseToTray}" />
+                                </ui:SettingRow>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="How it works" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,10" />
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12.5" LineHeight="19">
+                                    Windows are hidden with the OS feature <Run FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}">SetWindowDisplayAffinity</Run>,
+                                    which excludes a window from screen capture while leaving it visible on your own monitor.
+                                    Because that call only works from inside the owning app, this tool briefly runs it inside the
+                                    target process. That is code injection, so security software may flag the app, and you may
+                                    need to allow it. Elevated or protected apps (some games, DRM) can't be hidden.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
